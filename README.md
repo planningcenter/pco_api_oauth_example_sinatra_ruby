@@ -9,3 +9,7 @@ ruby app.rb
 ```
 
 Now visit [localhost:4567](http://localhost:4567).
+
+## Copyright & License
+
+Copyright 2015, Ministry Centered Technologies. Licensed MIT.
