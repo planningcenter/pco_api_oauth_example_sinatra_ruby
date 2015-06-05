@@ -11,14 +11,27 @@ OAUTH_APP_ID = 'app id goes here'
 OAUTH_SECRET = 'secret goes here'
 SCOPE = 'people'
 
-client = OAuth2::Client.new(OAUTH_APP_ID, OAUTH_SECRET, site: 'https://api.planningcenteronline.com')
+client = OAuth2::Client.new(
+  OAUTH_APP_ID,
+  OAUTH_SECRET,
+  site: 'https://api.planningcenteronline.com'
+)
+
+def api
+  PCO::API.new(oauth_access_token: session[:token])
+end
 
 get '/' do
   if session[:token]
-    api = PCO::API.new(oauth_access_token: session[:token])
-    people = api.people.v2.people.get
-    content_type 'application/json'
-    people.to_json
+    begin
+      people = api.people.v2.people.get
+    rescue PCO::API::Errors::Unauthorized
+      # token expired or revoked
+      session[:token] = nil
+      redirect '/?token=expired'
+    else
+      erb "<a href='/auth/logout'>log out</a><br><pre>#{JSON.pretty_generate(people)}</pre>"
+    end
   else
     erb "<a href='/auth'>authenticate with API</a>"
   end
@@ -33,7 +46,15 @@ get '/auth' do
 end
 
 get '/auth/complete' do
-  token = client.auth_code.get_token(params[:code], redirect_uri: 'http://localhost:4567/auth/complete')
+  token = client.auth_code.get_token(
+    params[:code],
+    redirect_uri: 'http://localhost:4567/auth/complete'
+  )
   session[:token] = token.token
+  redirect '/'
+end
+
+get '/auth/logout' do
+  api.oauth.revoke.post(token: session[:token])
   redirect '/'
 end
