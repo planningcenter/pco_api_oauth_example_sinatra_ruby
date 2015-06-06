@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    excon (0.45.3)
+    excon (0.30.0)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.9.1)
@@ -16,8 +16,8 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (~> 1.2)
-    pco_api (1.1.0)
-      excon (>= 0.30.0)
+    pco_api (1.1.1)
+      excon (~> 0.30.0)
       faraday (~> 0.9.1)
       faraday_middleware (~> 0.9.1)
     rack (1.6.1)
