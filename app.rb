@@ -22,7 +22,7 @@ class ExampleApp < Sinatra::Base
     OAuth2::Client.new(
       OAUTH_APP_ID,
       OAUTH_SECRET,
-      site: 'http://api.pco.dev'
+      site: 'https://api.planningcenteronline.com'
     )
   end
 
@@ -37,7 +37,7 @@ class ExampleApp < Sinatra::Base
   end
 
   def api
-    PCO::API.new(url: 'http://api.pco.dev', oauth_access_token: token.token)
+    PCO::API.new(oauth_access_token: token.token)
   end
 
   get '/' do
