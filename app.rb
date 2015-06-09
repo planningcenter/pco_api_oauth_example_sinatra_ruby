@@ -30,6 +30,8 @@ class ExampleApp < Sinatra::Base
     return if session[:token].nil?
     token = OAuth2::AccessToken.from_hash(client, session[:token].dup)
     if token.expired? && token.refresh_token
+      # looks like our token is expired and we have a refresh token,
+      # so let's get a new access token!
       token = token.refresh!
       session[:token] = token.to_hash
     end
@@ -46,6 +48,8 @@ class ExampleApp < Sinatra::Base
         people = api.people.v2.people.get
       rescue PCO::API::Errors::Unauthorized
         # token expired or revoked
+        # TODO use our refresh token to get a new access token
+        # instead of making the user go through the auth flow again
         session[:token] = nil
         redirect '/'
       else
@@ -57,6 +61,7 @@ class ExampleApp < Sinatra::Base
   end
 
   get '/auth' do
+    # redirect the user to PCO where they can authorize our app
     url = client.auth_code.authorize_url(
       scope: SCOPE,
       redirect_uri: 'http://localhost:4567/auth/complete'
@@ -65,15 +70,18 @@ class ExampleApp < Sinatra::Base
   end
 
   get '/auth/complete' do
+    # user was redirected back after they authorized our app
     token = client.auth_code.get_token(
       params[:code],
       redirect_uri: 'http://localhost:4567/auth/complete'
     )
+    # store the auth token and refresh token info in our session
     session[:token] = token.to_hash
     redirect '/'
   end
 
   get '/auth/logout' do
+    # make an api call to PCO to revoke the access token
     api.oauth.revoke.post(token: token.token)
     redirect '/'
   end
