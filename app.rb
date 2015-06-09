@@ -11,6 +11,9 @@ class ExampleApp < Sinatra::Base
   OAUTH_SECRET = 'secret goes here'
   SCOPE = 'people'
 
+  TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within
+                                 # this many seconds of expiring
+
   enable :sessions
   set :session_secret, 'super secret - BE SURE TO CHANGE THIS'
 
@@ -29,13 +32,16 @@ class ExampleApp < Sinatra::Base
   def token
     return if session[:token].nil?
     token = OAuth2::AccessToken.from_hash(client, session[:token].dup)
-    if token.expired? && token.refresh_token
-      # looks like our token is expired and we have a refresh token,
-      # so let's get a new access token!
+    if token.expires? && (token.expires_at < Time.now.to_i + TOKEN_EXPIRATION_PADDING) && token.refresh_token
+      # looks like our token will expire soon and we have a refresh token,
+      # so let's get a new access token
       token = token.refresh!
       session[:token] = token.to_hash
     end
     token
+  rescue OAuth2::Error
+    # our token info is bad, let's start over
+    session[:token] = nil
   end
 
   def api
@@ -47,9 +53,7 @@ class ExampleApp < Sinatra::Base
       begin
         people = api.people.v2.people.get
       rescue PCO::API::Errors::Unauthorized
-        # token expired or revoked
-        # TODO use our refresh token to get a new access token
-        # instead of making the user go through the auth flow again
+        # token probably revoked
         session[:token] = nil
         redirect '/'
       else
