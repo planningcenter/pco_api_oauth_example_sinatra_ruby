@@ -7,15 +7,16 @@ require 'erb'
 require 'time'
 
 class ExampleApp < Sinatra::Base
-  OAUTH_APP_ID = 'app id goes here'
-  OAUTH_SECRET = 'secret goes here'
-  SCOPE = 'people'
+  OAUTH_APP_ID = ENV.fetch('OAUTH_APP_ID').freeze
+  OAUTH_SECRET = ENV.fetch('OAUTH_SECRET').freeze
+  SCOPE = ENV.fetch('SCOPE', 'people').freeze
+  DOMAIN = ENV.fetch('DOMAIN', 'http://localhost:4567').freeze
 
   TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within
                                  # this many seconds of expiring
 
   enable :sessions
-  set :session_secret, 'super secret - BE SURE TO CHANGE THIS'
+  set :session_secret, ENV.fetch('SESSION_SECRET')
 
   configure :development do
     register Sinatra::Reloader
@@ -68,7 +69,7 @@ class ExampleApp < Sinatra::Base
     # redirect the user to PCO where they can authorize our app
     url = client.auth_code.authorize_url(
       scope: SCOPE,
-      redirect_uri: 'http://localhost:4567/auth/complete'
+      redirect_uri: "#{DOMAIN}/auth/complete"
     )
     redirect url
   end
@@ -77,7 +78,7 @@ class ExampleApp < Sinatra::Base
     # user was redirected back after they authorized our app
     token = client.auth_code.get_token(
       params[:code],
-      redirect_uri: 'http://localhost:4567/auth/complete'
+      redirect_uri: "#{DOMAIN}/auth/complete"
     )
     # store the auth token and refresh token info in our session
     session[:token] = token.to_hash
