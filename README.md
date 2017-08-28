@@ -22,6 +22,7 @@ NOTE: This app talks to our v2 API, documented at [planningcenter.github.io/api-
    ```bash
    export OAUTH_APP_ID=abcdef0123456789abcdef0123456789abcdef012345789abcdef0123456789a
    export OAUTH_SECRET=0123456789abcdef0123456789abcdef012345789abcdef0123456789abcdef0
+   export SESSION_SECRET=some-secret-phrase-for-session-cookie-encryption
    ruby app.rb
    ```
 
