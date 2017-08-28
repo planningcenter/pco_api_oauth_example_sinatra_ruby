@@ -17,7 +17,7 @@ NOTE: This app talks to our v2 API, documented at [planningcenter.github.io/api-
 
    ```
    bundle install
-   ruby app.rb
+   OAUTH_APP_ID=myclientid OAUTH_SECRET=mysecret ruby app.rb
    ```
 
 4. Visit [localhost:4567](http://localhost:4567).
