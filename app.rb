@@ -9,8 +9,8 @@ require 'erb'
 require 'time'
 
 class ExampleApp < Sinatra::Base
-  OAUTH_APP_ID = 'app id goes here'
-  OAUTH_SECRET = 'secret goes here'
+  OAUTH_APP_ID = ENV['OAUTH_APP_ID']
+  OAUTH_SECRET = ENV['OAUTH_SECRET']
   SCOPE = 'people'
 
   TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within this many seconds of expiring
