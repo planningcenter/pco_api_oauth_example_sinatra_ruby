@@ -12,6 +12,7 @@ class ExampleApp < Sinatra::Base
   OAUTH_APP_ID = ENV['OAUTH_APP_ID']
   OAUTH_SECRET = ENV['OAUTH_SECRET']
   SCOPE = 'people services'
+  API_URL = 'https://api.planningcenteronline.com'
 
   TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within this many seconds of expiring
 
@@ -23,11 +24,7 @@ class ExampleApp < Sinatra::Base
   end
 
   def client
-    OAuth2::Client.new(
-      OAUTH_APP_ID,
-      OAUTH_SECRET,
-      site: 'https://api.planningcenteronline.com'
-    )
+    OAuth2::Client.new(OAUTH_APP_ID, OAUTH_SECRET, site: API_URL)
   end
 
   def token
@@ -46,7 +43,7 @@ class ExampleApp < Sinatra::Base
   end
 
   def api
-    PCO::API.new(oauth_access_token: token.token)
+    PCO::API.new(oauth_access_token: token.token, url: API_URL)
   end
 
   get '/' do
