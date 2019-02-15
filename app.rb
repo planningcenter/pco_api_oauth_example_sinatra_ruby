@@ -11,7 +11,7 @@ require 'time'
 class ExampleApp < Sinatra::Base
   OAUTH_APP_ID = ENV['OAUTH_APP_ID']
   OAUTH_SECRET = ENV['OAUTH_SECRET']
-  SCOPE = 'people'
+  SCOPE = 'people services'
 
   TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within this many seconds of expiring
 
