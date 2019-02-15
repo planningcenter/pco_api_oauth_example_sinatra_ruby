@@ -85,6 +85,7 @@ class ExampleApp < Sinatra::Base
   get '/auth/logout' do
     # make an api call to PCO to revoke the access token
     api.oauth.revoke.post(token: token.token)
+    session.clear
     redirect '/'
   end
 
