@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bundler/setup'
 require 'oauth2'
 require 'sinatra/base'
@@ -11,8 +13,7 @@ class ExampleApp < Sinatra::Base
   OAUTH_SECRET = 'secret goes here'
   SCOPE = 'people'
 
-  TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within
-                                 # this many seconds of expiring
+  TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within this many seconds of expiring
 
   enable :sessions
   set :session_secret, 'super secret - BE SURE TO CHANGE THIS'
@@ -90,5 +91,5 @@ class ExampleApp < Sinatra::Base
     redirect '/'
   end
 
-  run! if app_file == $0
+  run! if app_file == $PROGRAM_NAME
 end
