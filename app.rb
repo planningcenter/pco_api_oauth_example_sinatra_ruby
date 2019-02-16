@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bundler/setup'
 require 'oauth2'
 require 'sinatra/base'
@@ -7,12 +9,12 @@ require 'erb'
 require 'time'
 
 class ExampleApp < Sinatra::Base
-  OAUTH_APP_ID = 'app id goes here'
-  OAUTH_SECRET = 'secret goes here'
-  SCOPE = 'people'
+  OAUTH_APP_ID = ENV['OAUTH_APP_ID']
+  OAUTH_SECRET = ENV['OAUTH_SECRET']
+  SCOPE = 'people services'
+  API_URL = 'https://api.planningcenteronline.com'
 
-  TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within
-                                 # this many seconds of expiring
+  TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within this many seconds of expiring
 
   enable :sessions
   set :session_secret, 'super secret - BE SURE TO CHANGE THIS'
@@ -22,11 +24,7 @@ class ExampleApp < Sinatra::Base
   end
 
   def client
-    OAuth2::Client.new(
-      OAUTH_APP_ID,
-      OAUTH_SECRET,
-      site: 'https://api.planningcenteronline.com'
-    )
+    OAuth2::Client.new(OAUTH_APP_ID, OAUTH_SECRET, site: API_URL)
   end
 
   def token
@@ -45,7 +43,7 @@ class ExampleApp < Sinatra::Base
   end
 
   def api
-    PCO::API.new(oauth_access_token: token.token)
+    PCO::API.new(oauth_access_token: token.token, url: API_URL)
   end
 
   get '/' do
@@ -87,8 +85,9 @@ class ExampleApp < Sinatra::Base
   get '/auth/logout' do
     # make an api call to PCO to revoke the access token
     api.oauth.revoke.post(token: token.token)
+    session.clear
     redirect '/'
   end
 
-  run! if app_file == $0
+  run! if app_file == $PROGRAM_NAME
 end
