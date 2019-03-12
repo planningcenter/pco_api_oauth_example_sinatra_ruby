@@ -11,12 +11,17 @@ NOTE: This app talks to our v2 API, documented at [planningcenter.github.io/api-
 
    Set the callback URL to be `http://localhost:4567/auth/complete`.
 
-2. Edit `app.rb` and include your app id and secret.
+2. Install the required gems:
 
-3. Install the required gems and start the app:
-
-   ```
+   ```bash
    bundle install
+   ```
+
+3. Set your Application ID and Secret in the environment and run the app:
+
+   ```bash
+   export OAUTH_APP_ID=abcdef0123456789abcdef0123456789abcdef012345789abcdef0123456789a
+   export OAUTH_SECRET=0123456789abcdef0123456789abcdef012345789abcdef0123456789abcdef0
    ruby app.rb
    ```
 
@@ -24,4 +29,4 @@ NOTE: This app talks to our v2 API, documented at [planningcenter.github.io/api-
 
 ## Copyright & License
 
-Copyright 2015, Ministry Centered Technologies. Licensed MIT.
+Copyright Ministry Centered Technologies. Licensed MIT.
