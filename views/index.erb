@@ -1,0 +1,13 @@
+<div class="people-list">
+  <% @people.each do |person| %>
+    <div class="person">
+      <div class="person-avatar">
+        <img src="<%=h person.dig('attributes', 'avatar') %>" alt="<%=h person.dig('attributes', 'name') %>">
+      </div>
+      <div class="person-name"><%=h person.dig('attributes', 'name') %></div>
+    </div>
+  <% end %>
+</div>
+
+<h2>People Raw Data</h2>
+<pre><%=h @formatted_response %></pre>

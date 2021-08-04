@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
+require 'cgi'
+require 'erb'
 require 'oauth2'
+require 'pco_api'
 require 'sinatra/base'
 require 'sinatra/reloader'
-require 'pco_api'
-require 'erb'
 require 'time'
 
 class ExampleApp < Sinatra::Base
@@ -22,6 +23,12 @@ class ExampleApp < Sinatra::Base
 
   configure :development do
     register Sinatra::Reloader
+  end
+
+  helpers do
+    def h(html)
+      CGI.escapeHTML html
+    end
   end
 
   def client
@@ -50,16 +57,19 @@ class ExampleApp < Sinatra::Base
   get '/' do
     if token
       begin
-        people = api.people.v2.people.get
+        response = api.people.v2.people.get
       rescue PCO::API::Errors::Unauthorized
         # token probably revoked
         session[:token] = nil
         redirect '/'
       else
-        erb "<a href='/auth/logout'>log out</a><br><pre>#{JSON.pretty_generate(people)}</pre>"
+        @people = response['data']
+        @formatted_response = JSON.pretty_generate(response)
+        @logged_in = true
+        erb :index
       end
     else
-      erb "<a href='/auth'>authenticate with API</a>"
+      erb :login
     end
   end
 
