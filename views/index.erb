@@ -1,13 +1,10 @@
-<div class="people-list">
-  <% @people.each do |person| %>
-    <div class="person">
-      <div class="person-avatar">
-        <img src="<%=h person.dig('attributes', 'avatar') %>" alt="<%=h person.dig('attributes', 'name') %>">
-      </div>
-      <div class="person-name"><%=h person.dig('attributes', 'name') %></div>
-    </div>
-  <% end %>
-</div>
+<p>You have connected this app to Planning Center!</p>
 
-<h2>People Raw Data</h2>
-<pre><%=h @formatted_response %></pre>
+<p><a href="/auth/logout">Log out</a></p>
+
+<h2>You:</h2>
+<pre><%= JSON.pretty_generate(@me) %></pre>
+
+<p>token: <code><%= @token.inspect %></code></p>
+
+<p><a href="/auth/refresh">refresh</a></p>

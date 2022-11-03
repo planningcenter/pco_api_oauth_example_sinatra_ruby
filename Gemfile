@@ -1,7 +1,10 @@
 source 'https://rubygems.org'
 
+gem 'jwt'
 gem 'oauth2'
-gem 'sinatra'
-gem 'sinatra-contrib'
 gem 'pco_api'
 gem 'pry'
+gem 'sequel'
+gem 'sinatra'
+gem 'sinatra-contrib'
+gem 'sqlite3'
