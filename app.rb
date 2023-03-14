@@ -14,7 +14,7 @@ class ExampleApp < Sinatra::Base
   OAUTH_SECRET = ENV.fetch('OAUTH_SECRET').freeze
   SCOPE = ENV.fetch('SCOPE', 'people services').freeze
   DOMAIN = ENV.fetch('DOMAIN', 'http://localhost:4567').freeze
-  API_URL = 'https://api.planningcenteronline.com'
+  API_URL = ENV.fetch('API_URL', 'https://api.planningcenteronline.com').freeze
 
   TOKEN_EXPIRATION_PADDING = 300 # go ahead and refresh a token if it's within this many seconds of expiring
 
@@ -95,7 +95,11 @@ class ExampleApp < Sinatra::Base
 
   get '/auth/logout' do
     # make an api call to PCO to revoke the access token
-    api.oauth.revoke.post(token: token.token)
+    api.oauth.revoke.post(
+      token: token.token,
+      client_id: OAUTH_APP_ID,
+      client_secret: OAUTH_SECRET
+    )
     session.clear
     redirect '/'
   end
