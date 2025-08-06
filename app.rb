@@ -135,6 +135,17 @@ class ExampleApp < Sinatra::Base
     redirect '/'
   end
 
+  get '/profile' do
+    if token
+      @userinfo_claims = fetch_user_info
+      @id_token_claims = session.dig(:current_user, :claims)
+      @logged_in = true
+      erb :profile
+    else
+      redirect '/'
+    end
+  end
+
   get '/auth/logout' do
     # make an api call to PCO to revoke the access token
     api.oauth.revoke.post(
