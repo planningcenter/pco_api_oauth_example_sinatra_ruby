@@ -3,6 +3,7 @@
 require 'bundler/setup'
 require 'cgi'
 require 'erb'
+require 'jwt'
 require 'oauth2'
 require 'pco_api'
 require 'sinatra/base'
@@ -12,7 +13,7 @@ require 'time'
 class ExampleApp < Sinatra::Base
   OAUTH_APP_ID = ENV.fetch('OAUTH_APP_ID').freeze
   OAUTH_SECRET = ENV.fetch('OAUTH_SECRET').freeze
-  SCOPE = ENV.fetch('SCOPE', 'people services').freeze
+  SCOPE = ENV.fetch('SCOPE', 'openid email profile people services').freeze
   DOMAIN = ENV.fetch('DOMAIN', 'http://localhost:4567').freeze
   API_URL = ENV.fetch('API_URL', 'https://api.planningcenteronline.com').freeze
 
@@ -54,6 +55,30 @@ class ExampleApp < Sinatra::Base
     PCO::API.new(oauth_access_token: token.token, url: API_URL)
   end
 
+  def fetch_user_info
+    # if the id_token is not present then no openid scopes were requested
+    return unless token && token.params['id_token']
+
+    userinfo_response = token.get('/oauth/userinfo')
+    JSON.parse(userinfo_response.body)
+  end
+
+  def parse_id_token(id_token)
+    return unless id_token
+    # Basic JWT decoding without signature verification for demo purposes only.
+    #
+    # NOTE: In production, you should verify the JWT signature using the JWK from the
+    # JWKS endpoint ({API_URL}/oauth/discovery/keys).
+    #
+    # This verification will happen automatically if using an authentication gem
+    # like `omniauth` with the `omniauth_openid_connect` strategy. Otherwise a gem
+    # like `json-jwt` can be used to manually build the public key from the JWK hash to
+    # pass into `JWT.decode`.
+    JWT.decode(id_token, nil, false).first
+  rescue JWT::DecodeError
+    nil
+  end
+
   get '/' do
     if token
       redirect '/people'
@@ -85,6 +110,7 @@ class ExampleApp < Sinatra::Base
     # redirect the user to PCO where they can authorize our app
     url = client.auth_code.authorize_url(
       scope: SCOPE,
+      prompt: 'select_account', # to allow user account selection or "login" to force re-authentication
       redirect_uri: "#{DOMAIN}/auth/complete"
     )
     redirect url
@@ -96,8 +122,16 @@ class ExampleApp < Sinatra::Base
       params[:code],
       redirect_uri: "#{DOMAIN}/auth/complete"
     )
-    # store the auth token and refresh token info in our session
+    # store the auth token, id token, and refresh token info in our session
     session[:token] = token.to_hash
+
+    if (id_token = token.params['id_token'])
+      session[:current_user] = {
+        name: fetch_user_info&.dig('name'),
+        claims: parse_id_token(id_token)
+      }
+    end
+
     redirect '/'
   end
 
