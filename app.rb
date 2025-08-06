@@ -56,6 +56,15 @@ class ExampleApp < Sinatra::Base
 
   get '/' do
     if token
+      redirect '/people'
+    else
+      erb :login
+    end
+  end
+
+  get '/people' do
+    if token
+      @logged_in = true
       begin
         response = api.people.v2.people.get
       rescue PCO::API::Errors::Unauthorized
@@ -65,11 +74,10 @@ class ExampleApp < Sinatra::Base
       else
         @people = response['data']
         @formatted_response = JSON.pretty_generate(response)
-        @logged_in = true
-        erb :index
+        erb :people
       end
     else
-      erb :login
+      redirect '/'
     end
   end
 
