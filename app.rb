@@ -153,6 +153,9 @@ class ExampleApp < Sinatra::Base
       client_id: OAUTH_APP_ID,
       client_secret: OAUTH_SECRET
     )
+  rescue PCO::API::Errors::Forbidden
+    # noop - token already revoked
+  ensure
     session.clear
     redirect '/'
   end
