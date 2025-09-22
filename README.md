@@ -1,4 +1,4 @@
-# PCO API OAuth Example - Sinatra + Ruby
+# PCO API OAuth/OIDC Example - Sinatra + Ruby
 
 This is an example Sinatra app for demonstrating how one might build an app to authenticate any PCO user
 and then subsequently use that authentication to query the API using [pco_api](https://github.com/planningcenter/pco_api_ruby).
@@ -22,7 +22,7 @@ You can learn more about Planning Center's API [here](https://developer.planning
    ```bash
    export OAUTH_APP_ID=abcdef0123456789abcdef0123456789abcdef012345789abcdef0123456789a
    export OAUTH_SECRET=0123456789abcdef0123456789abcdef012345789abcdef0123456789abcdef0
-   export SESSION_SECRET=some-secret-phrase-for-session-cookie-encryption
+   export SESSION_SECRET=some-secret-phrase-for-session-cookie-encryption-that-is-at-least-64-characters-long
    ruby app.rb
    ```
 

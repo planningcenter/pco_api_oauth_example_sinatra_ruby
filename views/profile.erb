@@ -1,0 +1,35 @@
+<div class="profile">
+  <h2>User Profile</h2>
+
+  <% if @userinfo_claims %>
+    <div class="claims-section">
+      <h3>User Information (from /oauth/userinfo)</h3>
+      <table class="claims-table">
+        <% @userinfo_claims.each do |key, value| %>
+          <tr>
+            <td class="claim-name"><%=h key %></td>
+            <td class="claim-value"><%=h value.to_s %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  <% end %>
+
+  <% if @id_token_claims %>
+    <div class="claims-section">
+      <h3>ID Token Claims</h3>
+      <table class="claims-table">
+        <% @id_token_claims.each do |key, value| %>
+          <tr>
+            <td class="claim-name"><%=h key %></td>
+            <td class="claim-value"><%=h value.to_s %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  <% end %>
+
+  <% unless @userinfo_claims || @id_token_claims %>
+    <p>No user claims available. Make sure that the 'openid email profile' scopes are requested.</p>
+  <% end %>
+</div>
