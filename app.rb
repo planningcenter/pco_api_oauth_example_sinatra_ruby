@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
+
+require 'base64'
 require 'cgi'
+require 'digest/sha2'
 require 'erb'
 require 'jwt'
 require 'oauth2'
 require 'pco_api'
+require 'securerandom'
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'time'
@@ -107,11 +111,16 @@ class ExampleApp < Sinatra::Base
   end
 
   get '/auth' do
+    session[:code_verifier] = SecureRandom.urlsafe_base64(48)
+    code_challenge = Base64.urlsafe_encode64(Digest::SHA256.digest(session[:code_verifier]), padding: false)
+
     # redirect the user to PCO where they can authorize our app
     url = client.auth_code.authorize_url(
       scope: SCOPE,
       prompt: 'select_account', # to allow user account selection or "login" to force re-authentication
-      redirect_uri: "#{DOMAIN}/auth/complete"
+      redirect_uri: "#{DOMAIN}/auth/complete",
+      code_challenge: code_challenge,
+      code_challenge_method: "S256"
     )
     redirect url
   end
@@ -120,7 +129,8 @@ class ExampleApp < Sinatra::Base
     # user was redirected back after they authorized our app
     token = client.auth_code.get_token(
       params[:code],
-      redirect_uri: "#{DOMAIN}/auth/complete"
+      redirect_uri: "#{DOMAIN}/auth/complete",
+      code_verifier: session[:code_verifier]
     )
     # store the auth token, id token, and refresh token info in our session
     session[:token] = token.to_hash
