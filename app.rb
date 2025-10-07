@@ -17,6 +17,7 @@ require 'time'
 class ExampleApp < Sinatra::Base
   OAUTH_APP_ID = ENV.fetch('OAUTH_APP_ID').freeze
   OAUTH_SECRET = ENV.fetch('OAUTH_SECRET').freeze
+  PUBLIC_OAUTH_APP_ID = ENV.fetch('PUBLIC_OAUTH_APP_ID').freeze
   SCOPE = ENV.fetch('SCOPE', 'openid people services').freeze
   DOMAIN = ENV.fetch('DOMAIN', 'http://localhost:4567').freeze
   API_URL = ENV.fetch('API_URL', 'https://api.planningcenteronline.com').freeze
