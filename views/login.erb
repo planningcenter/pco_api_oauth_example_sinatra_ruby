@@ -1,4 +1,112 @@
 <div class="login">
   <p>Login to view a list of people.</p>
   <a href='/auth'>Login with Planning Center</a>
+  <a href="javascript:void(0)" data-behavior="login_with_pkce">Login with Planning Center (Public + PKCE)</a>
 </div>
+
+<script data-name="OAuth Public + PKCE Demo App">
+  ;(async function() {
+    let CLIENT_ID    = "<%= ExampleApp::PUBLIC_OAUTH_APP_ID %>"
+
+    let REDIRECT_URI = "<%= ExampleApp::DOMAIN %>"
+    let SCOPE        = "people"
+    let API_URL      = "<%= ExampleApp::API_URL %>"
+
+    async function authorize() {
+      let codeVerifier = generateCodeVerifier();
+      let codeChallenge = await generateCodeChallenge(codeVerifier);
+
+      sessionStorage.setItem("code_verifier", codeVerifier);
+
+      let url = new URL(`${API_URL}/oauth/authorize`)
+      url.searchParams.append("response_type", "code");
+      url.searchParams.append("client_id", CLIENT_ID);
+      url.searchParams.append("redirect_uri", REDIRECT_URI);
+      url.searchParams.append("scope", SCOPE);
+      url.searchParams.append("code_challenge", codeChallenge);
+      url.searchParams.append("code_challenge_method", "S256");
+
+      window.location.href = url.toString();
+    }
+
+    async function exchangeAuthorizationCodeForAccessToken(code) {
+      let codeVerifier = sessionStorage.getItem("code_verifier")
+
+      let response = await fetch(`${API_URL}/oauth/token`, {
+                       method: "POST",
+                       headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+                       body: new URLSearchParams({
+                               grant_type: "authorization_code",
+                               client_id: CLIENT_ID,
+                               code: code,
+                               code_verifier: codeVerifier,
+                               redirect_uri: REDIRECT_URI,
+                             })
+                     })
+      let data = await response.json()
+
+      sessionStorage.setItem("access_token", data.access_token)
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+      let encoder = new TextEncoder()
+      let data = encoder.encode(codeVerifier)
+      let digest = await crypto.subtle.digest("SHA-256", data)
+
+      return urlSafeBase64Encode(String.fromCharCode(...new Uint8Array(digest)))
+    }
+
+    function generateCodeVerifier() {
+      let array = new Uint8Array(32)
+      crypto.getRandomValues(array)
+
+      return urlSafeBase64Encode(String.fromCharCode(...array))
+    }
+
+    function urlSafeBase64Encode(string) {
+      return btoa(string).replace(/\+/g, "-")
+                         .replace(/\//g, "_")
+                         .replace(/=+$/, "")
+    }
+
+    async function renderAuthenticatedApplication() {
+      let response = await fetch(`${API_URL}/people/v2/me`, {
+                       headers: {
+                         Authorization: `Bearer ${sessionStorage.getItem("access_token")}`
+                       }
+                     })
+      let data = await response.json()
+
+      document.querySelector("body > div.wrap > header").style.display = "none"
+
+      return `
+        <h1>Hi, ${data.data.attributes.name} (from Public + PKCE)</h1>
+        <p><button onclick="sessionStorage.clear(); window.location.reload();">Logout</button></p>
+      `
+    }
+
+    document.addEventListener("click", function (event) {
+      if (event.target.matches('a[data-behavior~="login_with_pkce"]')) {
+        authorize()
+      }
+    })
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      if (sessionStorage.getItem("access_token")) {
+        document.getElementById("content").innerHTML = await renderAuthenticatedApplication()
+      }
+    })
+
+    ;(async function handleRedirectFromPlanningCenterWithCode() {
+      let params = new URLSearchParams(window.location.search)
+      if (params.get("code")) {
+        history.replaceState(null, "", REDIRECT_URI)
+        await exchangeAuthorizationCodeForAccessToken(params.get("code"))
+
+        if (sessionStorage.getItem("access_token")) {
+          document.getElementById("content").innerHTML = await renderAuthenticatedApplication()
+        }
+      }
+    })()
+  })()
+</script>
